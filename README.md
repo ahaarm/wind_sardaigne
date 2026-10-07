@@ -1,6 +1,6 @@
 # 🪁 Vent Sardaigne
 
-Dashboard perso pour planifier un road-trip wingfoil en Sardaigne (9 → 25 octobre 2026, deux VW California) :
+Dashboard perso pour planifier un road-trip wingfoil en Sardaigne (arrivée à Porto Torres le 10 octobre, retour le 25 octobre 2026, deux VW California) :
 où aller chaque jour selon le vent, la houle et la météo, pour une débutante 🌱, pour du freefly/vague 🌊 et
 pour la famille ☀️.
 
@@ -8,9 +8,10 @@ pour la famille ☀️.
 
 | Page | Contenu |
 |---|---|
-| **Planning** (`/`) | Matrice spots × jours (10 jours) avec une note 0–100 par profil (Débutante, Freefly/vague, Les deux, Famille/beau temps) + « meilleurs choix par jour ». Filtre par région. |
+| **Planning** (`/`) | Matrice spots × jours (10 jours) avec une note 0–100 par profil (Débutante, Freefly/vague, Les deux, Famille/beau temps) + « meilleurs choix par jour ». Filtre par région, temps de route depuis Porto Torres ou la position GPS, correction thermique optionnelle. |
 | **Spot** (`/spot/<id>`) | Fiche du spot (niveau, plan d'eau, dangers, rose des vents side/onshore/offshore), heure par heure pour chaque modèle, houle, nuages/pluie/température, graphique 5 jours avec l'écart entre modèles, balises proches, liens Windy / Windfinder / Holfuy / itinéraire / campings. |
 | **Tendance 15 j** (`/tendance`) | Ensemble ECMWF (51 scénarios) par région : probabilité de ≥ 12 / ≥ 18 nds l'après-midi et régime dominant (Mistral, Scirocco, Libeccio). Pour choisir la côte vers laquelle rouler. |
+| **Campings** (`/campings`) | ~30 campings, aires et parkings ouverts (ou probablement) entre le 10 et le 25 octobre, avec dates, services, téléphone, sources, et les règles pour dormir en van. Aussi affichés sur chaque fiche spot. |
 | **Balises** (`/balises`) | Vent mesuré (METAR des aéroports et des caps + Figari en Corse), dernières 24 h. |
 | **Modèles** (`/modeles`) | Quel modèle croire selon l'échéance + **vérification automatique** : erreur des prévisions J-1/J-2/J-3 de chaque modèle face au vent mesuré aux balises sur les 7 derniers jours. |
 
@@ -40,14 +41,17 @@ Si un identifiant de modèle est refusé par Open-Meteo, le suivant dans `candid
 ## Notes (scoring)
 
 Calculées heure par heure entre 10 h et 18 h ; note du jour = moyenne des 3 meilleures heures (`src/lib/scoring.ts`).
+Seuil commun : **10 nœuds établis minimum** (`MIN_WIND`), en dessous la note est 0.
 
-- **Débutante** : vent idéal 12–18 nds, pénalité si rafales irrégulières ou > 25–30 nds, 0 si offshore, bonus lagune / eau plate, pénalité vagues.
-- **Freefly / vague** : vent 14–26 nds, houle idéale 0,8–2,5 m, spots « vague » favorisés.
+- **Débutante** : vent ≥ 10 nds, idéal 13–18 nds, pénalité si rafales irrégulières ou > 25–30 nds, 0 si offshore, bonus lagune / eau plate, pénalité vagues.
+- **Freefly / vague** : vent ≥ 10 nds, idéal 14–26 nds, houle idéale 0,8–2,5 m, spots « vague » favorisés.
 - **Les deux** : moyenne géométrique des deux → un spot où vous naviguez tous les deux le même jour.
 - **Famille / beau temps** : soleil, pas de pluie, ≥ 22 °C, vent pas trop fort.
 
 La direction est jugée par spot : side/side-on (bon), onshore (ok), side-off (bof), offshore (dangereux).
-Les spots et leurs orientations sont dans `src/lib/spots.ts` ; ajuste-les si tu découvres mieux sur place.
+Les spots (les 15 du guide [Inside Sardinia](https://www.inside-sardinia.com/guides/wingfoiling-sardinia/) + 6 spots à vagues hors guide) et leurs orientations sont dans `src/lib/spots.ts` ; ajuste-les si tu découvres mieux sur place.
+
+**Correction thermique** : le guide note que 12–18 nds prévus le matin donnent souvent 18–25 nds sur l'eau vers 15 h. Le réglage +10 % / +20 % majore le vent prévu entre 12 h et 18 h sur les spots marqués « thermique » (désactivé par défaut ; à calibrer avec la page Modèles et les balises).
 
 ## Déployer sur Vercel
 

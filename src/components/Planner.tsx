@@ -1,39 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { OverviewData } from "@/lib/server/forecast";
 import { PROFILES, summarizeDays, type DaySummary, type Profile, type SpotHourly } from "@/lib/scoring";
-import { REGIONS, SPOTS, type RegionId, type Spot } from "@/lib/spots";
+import { PLACES, REGIONS, SPOTS, type RegionId, type Spot } from "@/lib/spots";
 import { formatDay, todayLocal } from "@/lib/time";
 import { TRIP } from "@/lib/trip";
-import { scoreColor, scoreTextColor, compassFr } from "@/lib/wind";
+import { scoreColor, scoreTextColor, compassFr, haversineKm } from "@/lib/wind";
 import { DirArrow, ScoreDot, ScoreLegend, SpotBadges, StaleBanner } from "./ui";
 import { useApi } from "./useApi";
+import { BOOST_OPTIONS, boostValue, usePersistent, type BoostId } from "./usePersistent";
 
-
-function usePersistent<T extends string>(key: string, initial: T): [T, (v: T) => void] {
-  const [v, setV] = useState<T>(initial);
-  useEffect(() => {
-    try {
-      const s = localStorage.getItem(key);
-      if (s) setV(s as T);
-    } catch {
-      /* ignore */
-    }
-  }, [key]);
-  return [
-    v,
-    (nv: T) => {
-      setV(nv);
-      try {
-        localStorage.setItem(key, nv);
-      } catch {
-        /* ignore */
-      }
-    },
-  ];
+/** Temps de route estimé (routes sardes : ~1,3 × la distance à vol d'oiseau, ~70 km/h de moyenne). */
+function driveLabel(km: number): string {
+  const min = Math.round(((km * 1.3) / 70) * 60 / 5) * 5;
+  if (min < 60) return `≈ ${Math.max(5, min)} min`;
+  return `≈ ${Math.floor(min / 60)} h ${String(min % 60).padStart(2, "0")}`;
 }
+
 
 export function spotHourlyFrom(data: OverviewData, id: string): SpotHourly {
   return { time: data.time, ...data.spots[id] };
@@ -43,16 +28,32 @@ export default function Planner() {
   const { data, error, loading, stale } = useApi<OverviewData>("/api/overview");
   const [profile, setProfile] = usePersistent<Profile>("wind-sar:profile", "duo");
   const [region, setRegion] = usePersistent<RegionId | "all">("wind-sar:region", "all");
+  const [boostId, setBoostId] = usePersistent<BoostId>("wind-sar:boost", "0");
+  const boost = boostValue(boostId);
+  const [origin, setOrigin] = useState<{ name: string; lat: number; lon: number }>(PLACES["porto-torres"]);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const locate = () => {
+    if (!navigator.geolocation) return setGeoError("Géolocalisation indisponible");
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        setGeoError(null);
+        setOrigin({ name: "ma position", lat: p.coords.latitude, lon: p.coords.longitude });
+      },
+      (e) => setGeoError(e.message),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
+    );
+  };
+  const drive = (s: Spot) => driveLabel(haversineKm(origin.lat, origin.lon, s.lat, s.lon));
 
   const summaries = useMemo(() => {
     if (!data) return null;
     const out: Record<string, Map<string, DaySummary>> = {};
     for (const s of SPOTS) {
       if (!data.spots[s.id]) continue;
-      out[s.id] = new Map(summarizeDays(s, spotHourlyFrom(data, s.id), profile).map((d) => [d.date, d]));
+      out[s.id] = new Map(summarizeDays(s, spotHourlyFrom(data, s.id), profile, boost).map((d) => [d.date, d]));
     }
     return out;
-  }, [data, profile]);
+  }, [data, profile, boost]);
 
   const today = todayLocal();
   const dates = useMemo(() => {
@@ -87,7 +88,7 @@ export default function Planner() {
         <h1 style={{ margin: 0 }}>Où naviguer ?</h1>
         <span className="muted small">
           {daysToTrip > 0
-            ? `Départ dans ${daysToTrip} j (9 → 25 oct.)`
+            ? `Arrivée à Porto Torres dans ${daysToTrip} j (10 → 25 oct.)`
             : today <= TRIP.end
               ? `Jour ${-daysToTrip + 1} du voyage`
               : "Voyage terminé"}
@@ -113,6 +114,32 @@ export default function Planner() {
             {REGIONS[r].short}
           </button>
         ))}
+      </div>
+
+      <div className="row small" style={{ margin: "4px 0" }}>
+        <span className="muted" title="Sur les spots à brise thermique (☀︎), majore le vent prévu entre 12h et 18h">
+          Correction thermique :
+        </span>
+        {BOOST_OPTIONS.map((b) => (
+          <button key={b.id} className="chip" style={{ padding: "3px 10px" }} aria-pressed={boostId === b.id} onClick={() => setBoostId(b.id)}>
+            {b.label}
+          </button>
+        ))}
+      </div>
+      <div className="row small" style={{ margin: "4px 0" }}>
+        <span className="muted">Temps de route depuis :</span>
+        <button
+          className="chip"
+          style={{ padding: "3px 10px" }}
+          aria-pressed={origin.name !== "ma position"}
+          onClick={() => setOrigin(PLACES["porto-torres"])}
+        >
+          ⛴ Porto Torres
+        </button>
+        <button className="chip" style={{ padding: "3px 10px" }} aria-pressed={origin.name === "ma position"} onClick={locate}>
+          📍 Ma position
+        </button>
+        {geoError && <span className="tiny muted">({geoError})</span>}
       </div>
 
       <StaleBanner stale={stale} error={error} generatedAt={data?.generatedAt} />
@@ -144,7 +171,7 @@ export default function Planner() {
                         {spot.name}
                       </span>
                       <span className="muted tiny">
-                        {sum.wind != null ? `${Math.round(sum.wind)} nds ` : ""}
+                        {drive(spot)} · {sum.wind != null ? `${Math.round(sum.wind)} nds ` : ""}
                         {sum.dir != null ? compassFr(sum.dir) : ""}
                         {sum.wave != null ? ` · ${sum.wave} m` : ""}
                         {sum.window ? ` · ${sum.window}` : ""}
@@ -172,7 +199,7 @@ export default function Planner() {
               </thead>
               <tbody>
                 {regionsInOrder.map((r) => (
-                  <RegionRows key={r} region={r} spots={visibleSpots} dates={dates} summaries={summaries} profile={profile} />
+                  <RegionRows key={r} region={r} spots={visibleSpots} dates={dates} summaries={summaries} profile={profile} drive={drive} />
                 ))}
               </tbody>
             </table>
@@ -194,7 +221,9 @@ function RegionRows({
   dates,
   summaries,
   profile,
+  drive,
 }: {
+  drive: (s: Spot) => string;
   region: RegionId;
   spots: Spot[];
   dates: string[];
@@ -217,6 +246,7 @@ function RegionRows({
             <Link className="spot-link" href={`/spot/${s.id}`}>
               {s.name}
             </Link>
+            <div className="tiny muted">{drive(s)}</div>
             <div style={{ marginTop: 2 }}>
               <SpotBadges spot={s} />
             </div>

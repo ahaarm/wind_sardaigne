@@ -46,7 +46,7 @@ export default function Trend() {
 
       {data && (
         <>
-          <h2>Probabilité de vent navigable (≥ 12 nds l&apos;après-midi)</h2>
+          <h2>Probabilité de vent navigable (≥ 10 nds établis l&apos;après-midi)</h2>
           <div className="table-wrap">
             <table>
               <thead>
@@ -73,10 +73,10 @@ export default function Trend() {
                         <td key={date}>
                           <span
                             className="cell-btn"
-                            style={{ background: probColor(d.pOver12), color: probText(d.pOver12) }}
+                            style={{ background: probColor(d.pRide), color: probText(d.pRide) }}
                             title={`Médiane ${d.p50} nds (P10 ${d.p10} – P90 ${d.p90}) · ≥18 nds : ${d.pOver18} %`}
                           >
-                            <span className="cell-score">{d.pOver12}%</span>
+                            <span className="cell-score">{d.pRide}%</span>
                             <span className="cell-sub" style={{ display: "block" }}>
                               {dom ? dom.label.split("/")[0] : "–"}
                             </span>
@@ -121,7 +121,7 @@ export default function Trend() {
                       <tr>
                         <th style={{ textAlign: "left" }}>Jour</th>
                         <th>Vent 11–17h (P10–P90)</th>
-                        <th>≥12</th>
+                        <th>≥10</th>
                         <th>≥18</th>
                         <th title="Secteur ouest à nord-ouest">Mistral</th>
                         <th title="Secteur est à sud-est">Sciro.</th>
@@ -147,7 +147,7 @@ export default function Trend() {
                                 </span>
                               </div>
                             </td>
-                            <td>{d.pOver12}%</td>
+                            <td>{d.pRide}%</td>
                             <td>{d.pOver18}%</td>
                             <td>{d.pMistral}%</td>
                             <td>{d.pScirocco}%</td>

@@ -1,6 +1,7 @@
 import { fetchStationObs, STATIONS, type Obs, type Station } from "../metar";
 import { MODELS } from "../models";
 import { fetchPreviousRuns, type PointSeries } from "../openmeteo";
+import { MIN_WIND } from "../scoring";
 import { localParts } from "../time";
 
 export interface StationObs {
@@ -25,7 +26,7 @@ export interface ErrorStats {
   mae: number | null;
   /** Biais moyen prévision − mesure (nœuds) : > 0 = le modèle surestime. */
   bias: number | null;
-  /** % d'heures où le modèle a bien prévu « navigable » (≥ 12 nds) ou non. */
+  /** % d'heures où le modèle a bien prévu « navigable » (≥ 10 nds) ou non. */
   hit: number | null;
 }
 
@@ -49,7 +50,7 @@ export interface VerificationData {
   models: ModelVerification[];
 }
 
-const THRESHOLD = 12;
+const THRESHOLD = MIN_WIND;
 
 function stats(pairs: [number, number][]): ErrorStats {
   if (!pairs.length) return { n: 0, mae: null, bias: null, hit: null };

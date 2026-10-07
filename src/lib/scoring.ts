@@ -9,13 +9,13 @@ export const PROFILES: { id: Profile; label: string; emoji: string; help: string
     id: "debutante",
     label: "Débutante",
     emoji: "🌱",
-    help: "Vent 12–18 nds régulier, pas offshore, eau plate ou petites vagues, spot adapté aux débutants.",
+    help: "Vent établi ≥ 10 nds (idéal 13–18), régulier, pas offshore, eau plate ou petites vagues, spot adapté aux débutants.",
   },
   {
     id: "freefly",
     label: "Freefly / vague",
     emoji: "🌊",
-    help: "Vent 14–26 nds, houle 0,8–2,5 m, spot à vagues ; offshore exclu.",
+    help: "Vent ≥ 10 nds (idéal 14–26), houle 0,8–2,5 m, spot à vagues ; offshore exclu.",
   },
   {
     id: "duo",
@@ -60,11 +60,15 @@ function gustOf(h: HourInput): number {
   return h.g ?? (h.w ?? 0) * 1.35;
 }
 
+/** Vent établi minimum pour naviguer (nœuds). */
+export const MIN_WIND = 10;
+
 export function beginnerScore(spot: Spot, h: HourInput): number {
   if (h.w == null || h.d == null) return 0;
   const wind = ramp(h.w, [
-    [8, 0],
-    [12, 1],
+    [MIN_WIND - 0.5, 0],
+    [MIN_WIND, 0.5],
+    [13, 1],
     [18, 1],
     [22, 0.4],
     [25, 0],
@@ -94,7 +98,8 @@ export function beginnerScore(spot: Spot, h: HourInput): number {
 export function freeflyScore(spot: Spot, h: HourInput): number {
   if (h.w == null || h.d == null) return 0;
   const wind = ramp(h.w, [
-    [10, 0],
+    [MIN_WIND - 0.5, 0],
+    [MIN_WIND, 0.35],
     [14, 1],
     [26, 1],
     [32, 0.4],
@@ -170,8 +175,19 @@ export interface SpotHourly {
   sst: (number | null)[];
 }
 
-export function hourInput(s: SpotHourly, i: number): HourInput {
-  return { w: s.w[i], g: s.g[i], d: s.d[i], wave: s.wave[i], cloud: s.cloud[i], precip: s.precip[i], temp: s.temp[i] };
+/**
+ * Correction « thermique » optionnelle : sur les spots à brise thermique, entre 12h et 18h,
+ * le vent prévu est majoré de `thermalBoost` (ex. 0,15 = +15 %). Le guide Inside Sardinia note que
+ * 12–18 nds prévus le matin donnent souvent 18–25 nds sur l'eau vers 15h.
+ */
+export function hourInput(s: SpotHourly, i: number, spot?: Spot, thermalBoost = 0): HourInput {
+  let k = 1;
+  if (thermalBoost > 0 && spot?.thermal) {
+    const h = localParts(s.time[i]).hour;
+    if (h >= 12 && h <= 18) k = 1 + thermalBoost;
+  }
+  const mul = (v: number | null) => (v == null ? null : v * k);
+  return { w: mul(s.w[i]), g: mul(s.g[i]), d: s.d[i], wave: s.wave[i], cloud: s.cloud[i], precip: s.precip[i], temp: s.temp[i] };
 }
 
 /** Heures de navigation prises en compte pour la note du jour (heure locale). */
@@ -201,7 +217,7 @@ function mean(xs: number[]): number | null {
   return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
 }
 
-export function summarizeDays(spot: Spot, s: SpotHourly, profile: Profile): DaySummary[] {
+export function summarizeDays(spot: Spot, s: SpotHourly, profile: Profile, thermalBoost = 0): DaySummary[] {
   const byDate = new Map<string, number[]>();
   s.time.forEach((t, i) => {
     const { date, hour } = localParts(t);
@@ -219,7 +235,7 @@ export function summarizeDays(spot: Spot, s: SpotHourly, profile: Profile): DayS
       });
       continue;
     }
-    const scored = valid.map((i) => ({ i, sc: hourScore(profile, spot, hourInput(s, i)) }));
+    const scored = valid.map((i) => ({ i, sc: hourScore(profile, spot, hourInput(s, i, spot, thermalBoost)) }));
     const top = [...scored].sort((a, b) => b.sc - a.sc).slice(0, 3);
     const score = Math.round(mean(top.map((x) => x.sc)) ?? 0);
     const good = scored.filter((x) => x.sc >= 50);

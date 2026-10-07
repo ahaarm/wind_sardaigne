@@ -18,10 +18,13 @@ import {
 import { REGIONS, SPOT_BY_ID } from "@/lib/spots";
 import { ago, formatDay, localParts, todayLocal } from "@/lib/time";
 import { compassFr, dirQuality, DIR_QUALITY_LABEL, haversineKm, windName, scoreColor, scoreTextColor } from "@/lib/wind";
+import { CAMPINGS } from "@/lib/campings";
+import CampingCard from "./CampingCard";
 import Compass from "./Compass";
 import LineChart, { type ChartSeries } from "./LineChart";
 import { DirArrow, ScoreDot, SpotBadges, StaleBanner, WindBox, WindLegend } from "./ui";
 import { useApi } from "./useApi";
+import { boostValue, usePersistent, type BoostId } from "./usePersistent";
 
 const MAIN_MODELS = ["arome_hd", "icon_2i", "icon_eu", "ecmwf"];
 
@@ -30,6 +33,8 @@ export default function SpotView({ id, initialDate }: { id: string; initialDate:
   const { data, error, loading, stale } = useApi<SpotDetailData>(`/api/spot/${id}`);
   const obsApi = useApi<{ generatedAt: number; stations: StationObs[] }>("/api/observations");
   const [allModels, setAllModels] = useState(false);
+  const [boostId] = usePersistent<BoostId>("wind-sar:boost", "0");
+  const boost = boostValue(boostId);
   const today = todayLocal();
 
   const hourly: SpotHourly | null = useMemo(() => (data ? { time: data.time, ...data.blended } : null), [data]);
@@ -50,9 +55,9 @@ export default function SpotView({ id, initialDate }: { id: string; initialDate:
   const daySummaries = useMemo(() => {
     if (!hourly) return null;
     return Object.fromEntries(
-      PROFILES.map((p) => [p.id, new Map(summarizeDays(spot, hourly, p.id).map((d) => [d.date, d]))]),
+      PROFILES.map((p) => [p.id, new Map(summarizeDays(spot, hourly, p.id, boost).map((d) => [d.date, d]))]),
     );
-  }, [hourly, spot]);
+  }, [hourly, spot, boost]);
 
   const hoursIdx = useMemo(() => {
     if (!hourly || !day) return [];
@@ -67,6 +72,15 @@ export default function SpotView({ id, initialDate }: { id: string; initialDate:
       STATIONS.map((s) => ({ s, km: haversineKm(spot.lat, spot.lon, s.lat, s.lon) }))
         .sort((a, b) => a.km - b.km)
         .slice(0, 3),
+    [spot],
+  );
+
+  const sleeps = useMemo(
+    () =>
+      CAMPINGS.map((c) => ({ c, km: haversineKm(spot.lat, spot.lon, c.lat, c.lon) }))
+        .filter((x) => x.km <= 35 || x.c.spots.includes(spot.id))
+        .sort((a, b) => a.km - b.km)
+        .slice(0, 4),
     [spot],
   );
 
@@ -105,6 +119,13 @@ export default function SpotView({ id, initialDate }: { id: string; initialDate:
       <div className="grid-2">
         <div className="card">
           <dl className="kv">
+            <dt>Niveau</dt>
+            <dd>
+              {spot.level}
+              {spot.guide && <span className="muted tiny"> (guide Inside Sardinia)</span>}
+            </dd>
+            <dt>Base</dt>
+            <dd>{spot.base}</dd>
             <dt>Plan d&apos;eau</dt>
             <dd>{spot.water}</dd>
             <dt>Bons vents</dt>
@@ -361,8 +382,8 @@ export default function SpotView({ id, initialDate }: { id: string; initialDate:
                 </tr>
                 {(
                   [
-                    ["🌱 Débutante", (i: number) => beginnerScore(spot, hourInput(hourly, i))],
-                    ["🌊 Freefly", (i: number) => freeflyScore(spot, hourInput(hourly, i))],
+                    ["🌱 Débutante", (i: number) => beginnerScore(spot, hourInput(hourly, i, spot, boost))],
+                    ["🌊 Freefly", (i: number) => freeflyScore(spot, hourInput(hourly, i, spot, boost))],
                     ["☀️ Plage", (i: number) => weatherScore(hourInput(hourly, i))],
                   ] as const
                 ).map(([label, fn]) => (
@@ -408,13 +429,27 @@ export default function SpotView({ id, initialDate }: { id: string; initialDate:
               unit="nds"
               now={data?.now}
               refLines={[
-                { y: 12, label: "12 nds" },
+                { y: 10, label: "10 nds" },
                 { y: 20, label: "20 nds" },
               ]}
             />
           </div>
         </>
       )}
+
+      <h2>Où dormir à proximité</h2>
+      {sleeps.length ? (
+        <div className="grid-cards">
+          {sleeps.map(({ c, km }) => (
+            <CampingCard key={c.id} c={c} distance={`${Math.round(km)} km`} />
+          ))}
+        </div>
+      ) : (
+        <p className="muted small">Aucune adresse vérifiée à moins de 35 km.</p>
+      )}
+      <p className="tiny muted">
+        <Link href="/campings">Toutes les adresses ouvertes en octobre et les règles pour dormir en van →</Link>
+      </p>
     </div>
   );
 }

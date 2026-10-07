@@ -28,7 +28,7 @@ export default function Verification() {
             Sur les {data.days} derniers jours, en journée (9h–19h), aux balises :{" "}
             {data.stationsUsed.map((id) => STATION_BY_ID[id]?.name ?? id).join(", ") || "aucune"}. MAE = erreur moyenne
             en nœuds (plus c&apos;est bas, mieux c&apos;est). Biais &gt; 0 : le modèle surestime. « Bon tri » = % d&apos;heures
-            où le modèle a correctement prévu ≥ 12 nds ou non. Calculé le {formatDateTime(data.generatedAt)}.
+            où le modèle a correctement prévu ≥ 10 nds ou non. Calculé le {formatDateTime(data.generatedAt)}.
           </p>
           <div className="table-wrap">
             <table>

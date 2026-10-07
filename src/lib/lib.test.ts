@@ -3,7 +3,7 @@ import { align, blend, buildGrid, modelSeries } from "./blend";
 import { parseRawMetar } from "./metar";
 import { MODEL_BY_ID } from "./models";
 import { normalize } from "./openmeteo";
-import { beginnerScore, freeflyScore, ramp, summarizeDays, type SpotHourly } from "./scoring";
+import { beginnerScore, freeflyScore, hourInput, ramp, summarizeDays, type SpotHourly } from "./scoring";
 import { summarizeEnsemble } from "./server/ensemble";
 import { hourlyObs } from "./server/observations";
 import { SPOT_BY_ID, SPOTS } from "./spots";
@@ -75,6 +75,18 @@ describe("scoring", () => {
   it("freefly: Capo Mannu with 20 kn Mistral and 1.5 m swell is great", () => {
     const cm = SPOT_BY_ID["capo-mannu"];
     expect(freeflyScore(cm, { ...base, w: 20, g: 26, d: 320, wave: 1.5 })).toBeGreaterThan(70);
+  });
+  it("10 kn established is the minimum", () => {
+    expect(beginnerScore(pt, { ...base, w: 9, g: 12, d: 315 })).toBe(0);
+    expect(beginnerScore(pt, { ...base, w: 10, g: 13, d: 315 })).toBeGreaterThan(40);
+    expect(freeflyScore(SPOT_BY_ID["capo-mannu"], { ...base, w: 9, g: 12, d: 315, wave: 1.5 })).toBe(0);
+  });
+  it("thermal correction only applies to thermal spots in the afternoon", () => {
+    const t = [Date.UTC(2026, 9, 12, 7) / 1000, Date.UTC(2026, 9, 12, 13) / 1000]; // 9h et 15h à Rome
+    const s = { time: t, w: [10, 10], g: [12, 12], d: [315, 315], wave: [0, 0], cloud: [0, 0], precip: [0, 0], temp: [20, 20] } as unknown as SpotHourly;
+    expect(hourInput(s, 0, pt, 0.2).w).toBe(10);
+    expect(hourInput(s, 1, pt, 0.2).w).toBe(12);
+    expect(hourInput(s, 1, SPOT_BY_ID["capo-mannu"], 0.2).w).toBe(10);
   });
   it("summarizeDays groups by local date within riding hours", () => {
     const time = buildGrid(T0, 48);
@@ -193,8 +205,8 @@ describe("ensemble", () => {
     const d = days.find((x) => x.date === localParts(T0 + 12 * 3600).date)!;
     expect(d.members).toBe(10);
     expect(d.p50).toBe(13);
-    expect(d.pOver12).toBe(60); // 4,6,…,22 → 6 membres sur 10 ≥ 12 nds
-    expect(d.pMistral).toBe(10);
+    expect(d.pRide).toBe(70); // 4,6,…,22 → 7 membres sur 10 ≥ 10 nds
+    expect(d.pMistral).toBe(20);
     expect(d.pScirocco).toBe(50);
   });
 });

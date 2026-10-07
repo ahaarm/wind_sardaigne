@@ -49,13 +49,23 @@ export function ScoreDot({ score }: { score: number | null | undefined }) {
 export function SpotBadges({ spot }: { spot: Spot }) {
   const b = spot.beginner;
   return (
-    <span className="row" style={{ gap: 4, display: "inline-flex" }}>
+    <span className="row" style={{ gap: 4, display: "inline-flex", flexWrap: "wrap" }}>
       <span className={`badge badge-${b}`} title={BEGINNER_LABEL[b]}>
         {b === "ideal" ? "🌱 débutant ++" : b === "ok" ? "🌱 débutant ok" : "⚠ confirmés"}
       </span>
       <span className={`badge ${spot.freefly === "flat" ? "badge-flat" : "badge-wave"}`} title={FREEFLY_LABEL[spot.freefly]}>
         {spot.freefly === "top" ? "🌊 vague/freefly" : spot.freefly === "ok" ? "🌊 houle possible" : "▭ eau plate"}
       </span>
+      {spot.thermal && (
+        <span className="badge badge-flat badge-extra" title="Brise thermique d'après-midi fréquente">
+          ☀︎ thermique
+        </span>
+      )}
+      {spot.guide && (
+        <span className="badge badge-flat badge-extra" title="Spot du guide Inside Sardinia">
+          ★ guide
+        </span>
+      )}
     </span>
   );
 }

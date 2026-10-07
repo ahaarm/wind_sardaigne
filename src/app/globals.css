@@ -472,6 +472,9 @@ footer.site {
     font-size: 0.66rem;
     padding: 0 4px;
   }
+  .spot-col .badge-extra {
+    display: none;
+  }
   .cell-btn {
     min-width: 52px;
   }

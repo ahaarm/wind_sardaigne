@@ -1,3 +1,4 @@
+import { MIN_WIND } from "../scoring";
 import { fetchEnsemble, type PointSeries } from "../openmeteo";
 import { REGIONS, type RegionId } from "../spots";
 import { localParts } from "../time";
@@ -10,13 +11,14 @@ export interface EnsembleDay {
   p50: number;
   p90: number;
   /** Probabilités (0–100). */
-  pOver12: number;
+  /** Probabilité de vent navigable (≥ MIN_WIND, 10 nds). */
+  pRide: number;
   pOver18: number;
-  /** Secteur W–NW (Ponente/Mistral) avec ≥ 12 nds. */
+  /** Secteur W–NW (Ponente/Mistral) avec vent navigable. */
   pMistral: number;
-  /** Secteur E–SE (Levante/Scirocco) avec ≥ 12 nds. */
+  /** Secteur E–SE (Levante/Scirocco) avec vent navigable. */
   pScirocco: number;
-  /** Secteur S–SW (Ostro/Libeccio) avec ≥ 12 nds. */
+  /** Secteur S–SW (Ostro/Libeccio) avec vent navigable. */
   pLibeccio: number;
 }
 
@@ -88,11 +90,11 @@ export function summarizeEnsemble(p: PointSeries): EnsembleDay[] {
       p10: Math.round(percentile(sorted, 0.1) * 10) / 10,
       p50: Math.round(percentile(sorted, 0.5) * 10) / 10,
       p90: Math.round(percentile(sorted, 0.9) * 10) / 10,
-      pOver12: pct((m) => m.w >= 12),
+      pRide: pct((m) => m.w >= MIN_WIND),
       pOver18: pct((m) => m.w >= 18),
-      pMistral: pct((m) => m.w >= 12 && inSector(m.d, 247.5, 360)),
-      pScirocco: pct((m) => m.w >= 12 && inSector(m.d, 67.5, 157.5)),
-      pLibeccio: pct((m) => m.w >= 12 && inSector(m.d, 157.5, 247.5)),
+      pMistral: pct((m) => m.w >= MIN_WIND && inSector(m.d, 247.5, 360)),
+      pScirocco: pct((m) => m.w >= MIN_WIND && inSector(m.d, 67.5, 157.5)),
+      pLibeccio: pct((m) => m.w >= MIN_WIND && inSector(m.d, 157.5, 247.5)),
     });
   }
   return days;
