@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import type { StationObs } from "@/lib/server/observations";
+import { SPOT_BY_ID, WINDGURU } from "@/lib/spots";
 import { ago, formatTime } from "@/lib/time";
 import { compassFr, windName } from "@/lib/wind";
 import LineChart from "./LineChart";
@@ -17,6 +19,25 @@ export default function Stations() {
         Les aéroports sont souvent un peu abrités : sur un spot exposé, le vent réel est généralement plus fort. Pour les
         balises directement sur les spots (Holfuy, Windguru, Pioupiou…), utilisez les liens Windy / Holfuy de chaque spot.
       </p>
+      <div className="card small">
+        <strong>Balises Windguru sur les spots (vent mesuré en direct) :</strong>
+        <ul className="clean">
+          {Object.entries(WINDGURU)
+            .filter(([id, w]) => w.stations?.length && !w.proxy && SPOT_BY_ID[id])
+            .flatMap(([id, w]) =>
+              (w.stations ?? []).map((st) => (
+                <li key={st.id}>
+                  <a href={`https://www.windguru.cz/station/${st.id}`} target="_blank" rel="noreferrer">
+                    {st.name}
+                  </a>{" "}
+                  <span className="muted">
+                    (<Link href={`/spot/${id}`}>{SPOT_BY_ID[id].name}</Link>)
+                  </span>
+                </li>
+              )),
+            )}
+        </ul>
+      </div>
       <StaleBanner stale={stale} error={error} generatedAt={data?.generatedAt} />
       {loading && !data && <div className="card muted">Chargement…</div>}
       <WindLegend />

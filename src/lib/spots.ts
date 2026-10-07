@@ -567,3 +567,33 @@ export const PLACES = {
   "porto-torres": { name: "Porto Torres (ferry)", lat: 40.836, lon: 8.401 },
   olbia: { name: "Olbia (ferry)", lat: 40.923, lon: 9.515 },
 } as const;
+
+/**
+ * Pages Windguru (prévisions) par spot : https://www.windguru.cz/<id>.
+ * `proxy` = pas de page dédiée trouvée, on renvoie vers le spot Windguru le plus proche.
+ * `stations` = balises Windguru en direct (https://www.windguru.cz/station/<id>).
+ * Identifiants trouvés le 7 oct. 2026 via la recherche Windguru.
+ */
+export const WINDGURU: Record<string, { id: number; proxy?: string; stations?: { id: number; name: string }[] }> = {
+  "porto-pollo": { id: 278, stations: [{ id: 974, name: "Porto Pollo – FH Academy" }] },
+  "porto-liscia": { id: 91929 },
+  "rena-majore": { id: 49163, stations: [{ id: 2225, name: "Rena Majore – Petra di Cossu" }] },
+  "capo-testa": { id: 49163, proxy: "Rena Majore", stations: [{ id: 2225, name: "Rena Majore – Petra di Cossu" }] },
+  "isola-rossa": { id: 49167 },
+  valledoria: { id: 49168 },
+  platamona: { id: 49171 },
+  "la-pelosa": { id: 49172 },
+  mugoni: { id: 49174 },
+  "porto-ferro": { id: 49173 },
+  "capo-mannu": { id: 49176 },
+  "is-arutas": { id: 501236 },
+  "torre-grande": { id: 29081, proxy: "Sinis" },
+  "punta-trettu": { id: 436366 },
+  "porto-botte": { id: 74121, stations: [{ id: 3301, name: "Porto Botte – flyitkitesurf" }] },
+  funtanamare: { id: 52705 },
+  "porto-giunco": { id: 146965 },
+  chia: { id: 1522 },
+  poetto: { id: 29744 },
+  "su-tiriarzu": { id: 501232, proxy: "La Caletta (5 km)" },
+  "la-cinta": { id: 49159 },
+};

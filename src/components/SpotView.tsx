@@ -15,7 +15,7 @@ import {
   PROFILES,
   type SpotHourly,
 } from "@/lib/scoring";
-import { REGIONS, SPOT_BY_ID } from "@/lib/spots";
+import { REGIONS, SPOT_BY_ID, WINDGURU } from "@/lib/spots";
 import { ago, formatDay, localParts, todayLocal } from "@/lib/time";
 import { compassFr, dirQuality, DIR_QUALITY_LABEL, haversineKm, windName, scoreColor, scoreTextColor } from "@/lib/wind";
 import { CAMPINGS } from "@/lib/campings";
@@ -145,6 +145,22 @@ export default function SpotView({ id, initialDate }: { id: string; initialDate:
             ))}
           </ul>
           <div className="row" style={{ marginTop: 10 }}>
+            {WINDGURU[spot.id] && (
+              <a
+                className="btn"
+                href={`https://www.windguru.cz/${WINDGURU[spot.id].id}`}
+                target="_blank"
+                rel="noreferrer"
+                title={WINDGURU[spot.id].proxy ? `Pas de page dédiée : spot le plus proche (${WINDGURU[spot.id].proxy})` : undefined}
+              >
+                Windguru{WINDGURU[spot.id].proxy ? ` (${WINDGURU[spot.id].proxy})` : ""}
+              </a>
+            )}
+            {WINDGURU[spot.id]?.stations?.map((st) => (
+              <a key={st.id} className="btn" href={`https://www.windguru.cz/station/${st.id}`} target="_blank" rel="noreferrer">
+                📡 Balise {st.name}
+              </a>
+            ))}
             <a className="btn" href={`https://www.windy.com/?${spot.lat},${spot.lon},11`} target="_blank" rel="noreferrer">
               Windy (balises)
             </a>

@@ -224,3 +224,10 @@ describe("wings", () => {
     expect(wingPlan(19, 25).text).toBe("elle 3,5 m · toi 5 m");
   });
 });
+
+describe("windguru links", () => {
+  it("every spot has a Windguru page", async () => {
+    const { WINDGURU } = await import("./spots");
+    for (const s of SPOTS) expect(WINDGURU[s.id]?.id, s.id).toBeGreaterThan(0);
+  });
+});
