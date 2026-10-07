@@ -565,6 +565,10 @@ export const RULES: { title: string; text: string }[] = [
     text: "Stintino : nuit interdite sur toute la côte de 21h à 7h sauf zones autorisées (parking Le Saline). Alghero / parc de Porto Conte : véhicules interdits dans plusieurs zones sensibles jusqu'au 31 déc. 2026 (vérifier si Mugoni est concerné). Villasimius : nuit en camping-car interdite hors structures. Porto Torres : pas de nuit au port ni à la Marinella. Palau : nombreuses rues interdites aux camping-cars. Cabras : arrêté anti-camping-car historique.",
   },
   {
+    title: "Toit relevable (VW California)",
+    text: "L'art. 185 juge l'emprise au sol, pas la hauteur : toit relevé, rien dehors, le van reste « en stationnement » selon l'interprétation dominante. Mais là où le camping est interdit (loi sarde, arrêtés communaux), un toit relevé montre clairement qu'on dort sur place : c'est un indice de « campeggio » pour un agent. Hors structures : arriver tard, toit relevé le plus tard possible, repartir tôt, jamais près des dunes ni des panneaux d'interdiction.",
+  },
+  {
     title: "Conseil pratique",
     text: "En octobre beaucoup de bornes de service ferment : faire le plein d'eau et vidanger dans les aires ouvertes (Maragnani à Valledoria, Nurapolis, Sant'Antioco, Chia, Quartu). Appeler avant chaque nuit : les dates des annuaires sont souvent contradictoires.",
   },

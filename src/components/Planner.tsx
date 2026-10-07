@@ -10,6 +10,7 @@ import { TRIP } from "@/lib/trip";
 import { scoreColor, scoreTextColor, compassFr, haversineKm } from "@/lib/wind";
 import { DirArrow, ScoreDot, ScoreLegend, SpotBadges, StaleBanner } from "./ui";
 import { useApi } from "./useApi";
+import { wingPlan } from "@/lib/wings";
 import { BOOST_OPTIONS, boostValue, usePersistent, type BoostId } from "./usePersistent";
 
 /** Temps de route estimé (routes sardes : ~1,3 × la distance à vol d'oiseau, ~70 km/h de moyenne). */
@@ -131,10 +132,18 @@ export default function Planner() {
         <button
           className="chip"
           style={{ padding: "3px 10px" }}
-          aria-pressed={origin.name !== "ma position"}
+          aria-pressed={origin.name === PLACES["porto-torres"].name}
           onClick={() => setOrigin(PLACES["porto-torres"])}
         >
           ⛴ Porto Torres
+        </button>
+        <button
+          className="chip"
+          style={{ padding: "3px 10px" }}
+          aria-pressed={origin.name === PLACES.olbia.name}
+          onClick={() => setOrigin(PLACES.olbia)}
+        >
+          ⛴ Olbia
         </button>
         <button className="chip" style={{ padding: "3px 10px" }} aria-pressed={origin.name === "ma position"} onClick={locate}>
           📍 Ma position
@@ -176,6 +185,11 @@ export default function Planner() {
                         {sum.wave != null ? ` · ${sum.wave} m` : ""}
                         {sum.window ? ` · ${sum.window}` : ""}
                       </span>
+                      {sum.wind != null && sum.wind >= 10 && (
+                        <span className="tiny" style={{ display: "block" }}>
+                          🪁 {wingPlan(sum.wind, sum.gust).text}
+                        </span>
+                      )}
                     </span>
                   </Link>
                 ))}

@@ -21,6 +21,7 @@ import { compassFr, dirQuality, DIR_QUALITY_LABEL, haversineKm, windName, scoreC
 import { CAMPINGS } from "@/lib/campings";
 import CampingCard from "./CampingCard";
 import Compass from "./Compass";
+import { wingFor, wingLabel, wingConflict } from "@/lib/wings";
 import LineChart, { type ChartSeries } from "./LineChart";
 import { DirArrow, ScoreDot, SpotBadges, StaleBanner, WindBox, WindLegend } from "./ui";
 import { useApi } from "./useApi";
@@ -318,6 +319,26 @@ export default function SpotView({ id, initialDate }: { id: string; initialDate:
                   })}
                 </tr>
                 <tr>
+                  <td className="sticky-col small" title="Quiver 5 m + 3,5 m">
+                    🪁 Aile elle / toi
+                  </td>
+                  {hoursIdx.map((i) => {
+                    const her = wingFor(hourly.w[i], hourly.g[i], "debutante");
+                    const him = wingFor(hourly.w[i], hourly.g[i], "confirme");
+                    const short = (x: typeof her) => (x === "5" ? "5" : x === "3.5" ? "3,5" : x === "strong" ? "⚠" : "·");
+                    return (
+                      <td
+                        key={i}
+                        className="tiny"
+                        title={`elle ${wingLabel(her)} / toi ${wingLabel(him)}${wingConflict(her, him) ? " – même aile : à tour de rôle" : ""}`}
+                        style={wingConflict(her, him) ? { color: "var(--warn)", fontWeight: 700 } : undefined}
+                      >
+                        {short(her)}/{short(him)}
+                      </td>
+                    );
+                  })}
+                </tr>
+                <tr>
                   <td className="sticky-col">Écart modèles</td>
                   {hoursIdx.map((i) => (
                     <td key={i} className="tiny muted">
@@ -408,7 +429,8 @@ export default function SpotView({ id, initialDate }: { id: string; initialDate:
             </table>
           </div>
           <p className="muted tiny">
-            Petits chiffres sous les modèles = rafales. Le « mix » combine les modèles selon l&apos;échéance (AROME + ICON-2I
+            Ligne « Aile » : taille conseillée pour elle / toi avec votre quiver 5 m + 3,5 m (en orange = la même aile
+            pour les deux → à tour de rôle ; ⚠ = trop fort). Petits chiffres sous les modèles = rafales. Le « mix » combine les modèles selon l&apos;échéance (AROME + ICON-2I
             à court terme, ICON-EU + ECMWF ensuite).
           </p>
         </>

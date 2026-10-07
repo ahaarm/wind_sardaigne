@@ -565,4 +565,5 @@ export const FREEFLY_LABEL: Record<FreeflyLevel, string> = {
 /** Points de départ pour estimer les temps de route. */
 export const PLACES = {
   "porto-torres": { name: "Porto Torres (ferry)", lat: 40.836, lon: 8.401 },
+  olbia: { name: "Olbia (ferry)", lat: 40.923, lon: 9.515 },
 } as const;

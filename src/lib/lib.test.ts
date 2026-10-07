@@ -210,3 +210,17 @@ describe("ensemble", () => {
     expect(d.pScirocco).toBe(50);
   });
 });
+
+describe("wings", () => {
+  it("chooses wing size per rider", async () => {
+    const { wingFor, wingPlan } = await import("./wings");
+    expect(wingFor(8, 10, "debutante")).toBe("light");
+    expect(wingFor(14, 18, "debutante")).toBe("5");
+    expect(wingFor(18, 24, "debutante")).toBe("3.5");
+    expect(wingFor(18, 24, "confirme")).toBe("5");
+    expect(wingFor(25, 33, "debutante")).toBe("strong");
+    expect(wingFor(25, 33, "confirme")).toBe("3.5");
+    expect(wingPlan(14, 18).text).toContain("à tour de rôle");
+    expect(wingPlan(19, 25).text).toBe("elle 3,5 m · toi 5 m");
+  });
+});

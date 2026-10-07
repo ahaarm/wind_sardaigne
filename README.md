@@ -1,6 +1,6 @@
 # 🪁 Vent Sardaigne
 
-Dashboard perso pour planifier un road-trip wingfoil en Sardaigne (arrivée à Porto Torres le 10 octobre, retour le 25 octobre 2026, deux VW California) :
+Dashboard perso pour planifier un road-trip wingfoil en Sardaigne (arrivée à Porto Torres le 10 octobre, retour le 25 octobre 2026 depuis Porto Torres ou Olbia, deux VW California) :
 où aller chaque jour selon le vent, la houle et la météo, pour une débutante 🌱, pour du freefly/vague 🌊 et
 pour la famille ☀️.
 
@@ -8,7 +8,7 @@ pour la famille ☀️.
 
 | Page | Contenu |
 |---|---|
-| **Planning** (`/`) | Matrice spots × jours (10 jours) avec une note 0–100 par profil (Débutante, Freefly/vague, Les deux, Famille/beau temps) + « meilleurs choix par jour ». Filtre par région, temps de route depuis Porto Torres ou la position GPS, correction thermique optionnelle. |
+| **Planning** (`/`) | Matrice spots × jours (10 jours) avec une note 0–100 par profil (Débutante, Freefly/vague, Les deux, Famille/beau temps) + « meilleurs choix par jour ». Filtre par région, temps de route depuis Porto Torres, Olbia ou la position GPS, aile conseillée (5 m / 3,5 m) pour chacun, correction thermique optionnelle. |
 | **Spot** (`/spot/<id>`) | Fiche du spot (niveau, plan d'eau, dangers, rose des vents side/onshore/offshore), heure par heure pour chaque modèle, houle, nuages/pluie/température, graphique 5 jours avec l'écart entre modèles, balises proches, liens Windy / Windfinder / Holfuy / itinéraire / campings. |
 | **Tendance 15 j** (`/tendance`) | Ensemble ECMWF (51 scénarios) par région : probabilité de ≥ 12 / ≥ 18 nds l'après-midi et régime dominant (Mistral, Scirocco, Libeccio). Pour choisir la côte vers laquelle rouler. |
 | **Campings** (`/campings`) | ~30 campings, aires et parkings ouverts (ou probablement) entre le 10 et le 25 octobre, avec dates, services, téléphone, sources, et les règles pour dormir en van. Aussi affichés sur chaque fiche spot. |
@@ -52,6 +52,12 @@ La direction est jugée par spot : side/side-on (bon), onshore (ok), side-off (b
 Les spots (les 15 du guide [Inside Sardinia](https://www.inside-sardinia.com/guides/wingfoiling-sardinia/) + 6 spots à vagues hors guide) et leurs orientations sont dans `src/lib/spots.ts` ; ajuste-les si tu découvres mieux sur place.
 
 **Correction thermique** : le guide note que 12–18 nds prévus le matin donnent souvent 18–25 nds sur l'eau vers 15 h. Le réglage +10 % / +20 % majore le vent prévu entre 12 h et 18 h sur les spots marqués « thermique » (désactivé par défaut ; à calibrer avec la page Modèles et les balises).
+
+## Choix d'aile (quiver 5 m + 3,5 m)
+
+`src/lib/wings.ts` : vent effectif = max(vent moyen, 0,8 × rafales). Débutante : 5 m jusqu'à ~17 nds, 3,5 m jusqu'à ~24 nds.
+Confirmé : 5 m jusqu'à ~22 nds, 3,5 m jusqu'à ~32 nds. Si vous avez besoin de la même aile au même moment, l'app
+l'indique (« à tour de rôle »). Seuils à ajuster après les premières sessions.
 
 ## Déployer sur Vercel
 
