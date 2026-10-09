@@ -9,6 +9,7 @@ pour la famille ☀️.
 | Page | Contenu |
 |---|---|
 | **Planning** (`/`) | Matrice spots × jours (10 jours) avec une note 0–100 par profil (Débutante, Freefly/vague, Les deux, Famille/beau temps) + « meilleurs choix par jour ». Filtre par région, temps de route depuis Porto Torres, Olbia ou la position GPS, aile conseillée (5 m / 3,5 m) pour chacun, correction thermique optionnelle. |
+| **Carte** (`/carte`) | Carte OpenStreetMap : note de chaque spot pour le jour et le profil choisis, flèche de vent, campings ouverts la nuit choisie, classement du jour. |
 | **Spot** (`/spot/<id>`) | Fiche du spot (niveau, plan d'eau, dangers, rose des vents side/onshore/offshore), heure par heure pour chaque modèle, houle, nuages/pluie/température, graphique 5 jours avec l'écart entre modèles, balises proches, liens Windguru (+ balises Windguru) / Windy / Windfinder / Holfuy / itinéraire / campings. |
 | **Tendance 15 j** (`/tendance`) | Ensemble ECMWF (51 scénarios) par région : probabilité de ≥ 12 / ≥ 18 nds l'après-midi et régime dominant (Mistral, Scirocco, Libeccio). Pour choisir la côte vers laquelle rouler. |
 | **Campings** (`/campings`) | ~30 campings, aires et parkings ouverts (ou probablement) entre le 10 et le 25 octobre, avec dates, services, téléphone, sources, et les règles pour dormir en van. Aussi affichés sur chaque fiche spot. |
