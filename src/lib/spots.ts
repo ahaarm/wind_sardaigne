@@ -518,6 +518,29 @@ export const SPOTS: Spot[] = [
     notes: ["Grande plage urbaine avec écoles, pratique pour un jour de ville.", "Par Maestrale : offshore, dangereux."],
     hazards: ["Offshore par Maestrale / vent de nord"],
   },
+  {
+    id: "costa-rei",
+    name: "Costa Rei",
+    region: "sud",
+    lat: 39.25,
+    lon: 9.578,
+    facing: 95,
+    flatWater: false,
+    beginner: "no",
+    freefly: "top",
+    level: "Intermédiaire / avancé (hors guide)",
+    guide: false,
+    thermal: false,
+    base: "Costa Rei / Muravera (camping Capo Ferrato)",
+    water: "Longue plage de sable blanc, eau superbe, beach-break",
+    bestWinds: "Grecale (NE), Tramontana (N) ; Est / Sud-Est side-on avec vagues",
+    notes: [
+      "Spot de vagues de la côte est : meilleurs vents Grecale (NE) et Tramontana (N) selon KiteGeneration.",
+      "Côte est peu ventée en moyenne ; vent de terre (offshore) par Mistral.",
+      "Pour ta femme : seulement par vent modéré et petite houle, plutôt une journée plage.",
+    ],
+    hazards: ["Shorebreak quand la houle d'est rentre", "Offshore par Mistral / vent d'ouest"],
+  },
   // ================= EST =================
   {
     id: "su-tiriarzu",
@@ -618,6 +641,7 @@ export const WINDGURU: Record<string, { id: number; proxy?: string; stations?: {
   "porto-giunco": { id: 146965 },
   chia: { id: 1522 },
   poetto: { id: 29744 },
+  "costa-rei": { id: 443693 },
   "su-tiriarzu": { id: 501232, proxy: "La Caletta (5 km)" },
   "la-cinta": { id: 49159 },
 };
